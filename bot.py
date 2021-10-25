@@ -1,7 +1,9 @@
 import os
+import typing
 
 import discord
 from discord.ext import commands
+from discord.ext.commands import Context
 
 from audio import YTDLSource
 from config import TOKEN
@@ -20,7 +22,7 @@ async def on_ready():
 
 
 @bot.command(name='server', help='Prints details of Server')
-async def server(ctx):
+async def server(ctx: Context):
     owner = f'{ctx.guild.owner}'
     region = f'{ctx.guild.region}'
     member_count = f'{ctx.guild.member_count}'
@@ -40,8 +42,29 @@ async def server(ctx):
     await ctx.send(embed=embed)
 
 
+@bot.command(name='user', help='Get user information')
+async def user_info(ctx: Context, *, user: typing.Optional[discord.User] = None):
+    if user is None:
+        user = ctx.author
+
+    username = user.name
+    avatar = user.avatar_url
+    created_at = user.created_at
+
+    embed = discord.Embed(
+        title=f'User info by {username}',
+        description='User information',
+        color=discord.Color.random(),
+    )
+    embed.set_thumbnail(url=avatar)
+    embed.add_field(name='Username', value=username, inline=True)
+    embed.add_field(name='Created', value=created_at.strftime('%d-%m-%Y'), inline=True)
+
+    await ctx.send(embed=embed)
+
+
 @bot.command(name='join', help='Tells the bot to join the voice channel')
-async def join(ctx):
+async def join(ctx: Context):
     if not ctx.message.author.voice:
         await ctx.send(f'{ctx.message.author.name} is not connected to a voice channel')
         return
@@ -56,7 +79,7 @@ async def join(ctx):
 
 
 @bot.command(name='leave', help='To make the bot leave the voice channel')
-async def leave(ctx):
+async def leave(ctx: Context):
     voice_client = ctx.message.guild.voice_client
     if voice_client is None:
         await ctx.send('The bot is not connected to a voice channel')
@@ -67,7 +90,7 @@ async def leave(ctx):
 
 
 @bot.command(name='play', help='To play song')
-async def play(ctx, url):
+async def play(ctx: Context, url: str):
     try:
         server = ctx.message.guild
         voice_channel = server.voice_client
@@ -87,7 +110,7 @@ async def play(ctx, url):
 
 
 @bot.command(name='pause', help='This command pauses the song')
-async def pause(ctx):
+async def pause(ctx: Context):
     voice_client = ctx.message.guild.voice_client
     if voice_client and voice_client.is_playing():
         voice_client.pause()
@@ -97,7 +120,7 @@ async def pause(ctx):
 
 
 @bot.command(name='resume', help='Resumes the song')
-async def resume(ctx):
+async def resume(ctx: Context):
     voice_client = ctx.message.guild.voice_client
     if voice_client and voice_client.is_paused():
         voice_client.resume()
@@ -106,7 +129,7 @@ async def resume(ctx):
 
 
 @bot.command(name='stop', help='Stops the song')
-async def stop(ctx):
+async def stop(ctx: Context):
     voice_client = ctx.message.guild.voice_client
     if voice_client and voice_client.is_playing():
         voice_client.stop()
