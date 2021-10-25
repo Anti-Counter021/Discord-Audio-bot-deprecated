@@ -11,6 +11,35 @@ client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 
+@bot.event
+async def on_ready():
+    for guild in bot.guilds:
+        for channel in guild.text_channels:
+            if f'{channel}'.lower() == 'general':
+                await channel.send(r'I\'m back! My name is AudioBot by \_Counter021_')
+
+
+@bot.command(name='server', help='Prints details of Server')
+async def server(ctx):
+    owner = f'{ctx.guild.owner}'
+    region = f'{ctx.guild.region}'
+    member_count = f'{ctx.guild.member_count}'
+    icon = f'{ctx.guild.icon_url}'
+    description = f'{ctx.guild.description}'
+
+    embed = discord.Embed(
+        title=f'{ctx.guild.name} Server info',
+        description=description,
+        color=discord.Color.random()
+    )
+    embed.set_thumbnail(url=icon)
+    embed.add_field(name='Owner', value=owner, inline=True)
+    embed.add_field(name='Region', value=region, inline=True)
+    embed.add_field(name='Member count', value=member_count, inline=True)
+
+    await ctx.send(embed=embed)
+
+
 @bot.command(name='join', help='Tells the bot to join the voice channel')
 async def join(ctx):
     if not ctx.message.author.voice:
@@ -48,11 +77,13 @@ async def play(ctx, url):
             filename, title = await YTDLSource.from_url(url, loop=bot.loop)
             voice_channel.play(discord.FFmpegPCMAudio(executable='ffmpeg', source=filename))
         await ctx.send(f'Now playing: {title}')
-        os.remove(filename)
     except ValueError:
         await ctx.send('Please check the url! The bot could not find the video')
     except Exception as _ex:
         await ctx.send('The bot is not connected to a voice channel')
+    finally:
+        if filename:
+            os.remove(filename)
 
 
 @bot.command(name='pause', help='This command pauses the song')
