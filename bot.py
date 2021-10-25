@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+from audio import YTDLSource
 from config import TOKEN
 
 intents = discord.Intents().all()
@@ -32,6 +33,21 @@ async def leave(ctx):
         await voice_client.disconnect()
     else:
         await ctx.send('The bot is not connected to a voice channel')
+
+
+@bot.command(name='play', help='To play song')
+async def play(ctx, url):
+    try:
+        server = ctx.message.guild
+        voice_channel = server.voice_client
+
+        async with ctx.typing():
+            filename, title = await YTDLSource.from_url(url, loop=bot.loop)
+            voice_channel.play(discord.FFmpegPCMAudio(executable='ffmpeg', source=filename))
+        await ctx.send(f'Now playing: {title}')
+    except Exception as _ex:
+        print(_ex)
+        await ctx.send('The bot is not connected to a voice channel.')
 
 
 if __name__ == '__main__':
