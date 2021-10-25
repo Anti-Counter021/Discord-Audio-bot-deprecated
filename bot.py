@@ -28,7 +28,7 @@ async def join(ctx):
 async def leave(ctx):
     voice_client = ctx.message.guild.voice_client
     if voice_client is None:
-        await ctx.send('The bot is not connected to a voice channel.')
+        await ctx.send('The bot is not connected to a voice channel')
     elif voice_client.is_connected():
         await voice_client.disconnect()
     else:
@@ -47,7 +47,35 @@ async def play(ctx, url):
         await ctx.send(f'Now playing: {title}')
     except Exception as _ex:
         print(_ex)
-        await ctx.send('The bot is not connected to a voice channel.')
+        await ctx.send('The bot is not connected to a voice channel')
+
+
+@bot.command(name='pause', help='This command pauses the song')
+async def pause(ctx):
+    voice_client = ctx.message.guild.voice_client
+    if voice_client and voice_client.is_playing():
+        voice_client.pause()
+        await ctx.send('Audio has been paused')
+    else:
+        await ctx.send('The bot is not playing anything at the moment')
+
+
+@bot.command(name='resume', help='Resumes the song')
+async def resume(ctx):
+    voice_client = ctx.message.guild.voice_client
+    if voice_client and voice_client.is_paused():
+        voice_client.resume()
+    else:
+        await ctx.send('The bot was not playing anything before this. Use play command')
+
+
+@bot.command(name='stop', help='Stops the song')
+async def stop(ctx):
+    voice_client = ctx.message.guild.voice_client
+    if voice_client and voice_client.is_playing():
+        voice_client.stop()
+    else:
+        await ctx.send('The bot is not playing anything at the moment')
 
 
 if __name__ == '__main__':
