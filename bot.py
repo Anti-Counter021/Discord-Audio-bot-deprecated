@@ -1,3 +1,5 @@
+import os
+
 import discord
 from discord.ext import commands
 
@@ -42,11 +44,14 @@ async def play(ctx, url):
         voice_channel = server.voice_client
 
         async with ctx.typing():
+            await ctx.send('Please waiting...')
             filename, title = await YTDLSource.from_url(url, loop=bot.loop)
             voice_channel.play(discord.FFmpegPCMAudio(executable='ffmpeg', source=filename))
         await ctx.send(f'Now playing: {title}')
+        os.remove(filename)
+    except ValueError:
+        await ctx.send('Please check the url! The bot could not find the video')
     except Exception as _ex:
-        print(_ex)
         await ctx.send('The bot is not connected to a voice channel')
 
 
